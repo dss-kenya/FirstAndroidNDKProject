@@ -1,0 +1,78 @@
+in order to allow exceptions to be handled in an NDK application,
+Add the following lines to Android.mk file:
+LOCAL_CPP_FEATURES += exceptions
+
+and to enable logging using android logs, add the line below to the same file:
+LOCAL_LDLIBS := -llog
+
+Exceptions are not handled in the jni codes, because of the overhead involved, thus,
+taking an example of divide by 0, you might get unexpected responses, since it is not handled.
+
+To handle such an exception, say you have the following jni code:
+
+JNIEXPORT jfloat JNICALL Java_com_azilen_firstandroidndkproject_MainActivity_divideByZero(JNIEnv* env,
+				jobject jobj, jfloat x, jint y, jclass classObj) {
+			__android_log_print(ANDROID_LOG_INFO,APP_NAME, "value of x : %f \nvalue of y : %d ",x,y);
+		return (x/y);
+}
+
+This function will not return ArithmeticException when y == 0,
+
+to handle such scenarios, the jni code can be converted to:
+
+JNIEXPORT jfloat JNICALL Java_com_azilen_firstandroidndkproject_MainActivity_divideByZero(JNIEnv* env,
+				jobject jobj, jfloat x, jint y, jclass classObj) {
+			__android_log_print(ANDROID_LOG_INFO,APP_NAME, "value of x : %f \nvalue of y : %d ",x,y);
+	jclass cls = (env)->GetObjectClass(jobj);
+			try {
+				if(y == 0) {
+					__android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "y is 0");
+					
+					// this throws an error that can be handled in the MainActivity class.
+					(env)->ThrowNew(classObj, "cannot divide by 0");
+					//throw;
+				}else {
+					return (x/y);
+				}
+			}catch (...) {
+				__android_log_print(ANDROID_LOG_ERROR, APP_NAME, "an error has occurred ! cannot divide by 0");
+				return -1;
+			}
+
+			return -1;
+}
+
+the MainActivity class will contain the following code:
+public native int divideByZero(float z, int y, Class<?> classObj) throws MyException;
+
+and
+
+try {
+		float y = divideByZero(100, 0, MyException.class);
+		}catch(final MyException e) {
+			Handler handler = new Handler();
+			handler.post(new Runnable() {
+				
+			@Override
+			public void run() {
+  			Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+			}
+		});
+}
+
+with the MyException class as:
+
+static class MyException extends Exception {
+		private String message;
+		
+		public String getMessage() {
+			return message;
+		}
+		
+		public MyException(String msg) {
+			message = msg;
+		}
+}
+
+This way the exception thrown will be handled in the activity class without causing a crash.
+	

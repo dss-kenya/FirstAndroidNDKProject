@@ -67,3 +67,12 @@ REFERENCES:
 3. http://stackoverflow.com/a/20812382/2683275
 4. http://stackoverflow.com/q/16323250/2683275
 5. http://en.wikipedia.org/wiki/Java_Native_Interface *
+
+
+----->
+
+Converting jstring to char * in jni
+
+const char *nativeString = (*env)->GetStringUTFChars(env, javaString, 0);
+// use your string
+(*env)->ReleaseStringUTFChars(env, javaString, nativeString);

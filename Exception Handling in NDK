@@ -10,7 +10,7 @@ taking an example of divide by 0, you might get unexpected responses, since it i
 
 To handle such an exception, say you have the following jni code:
 
-JNIEXPORT jfloat JNICALL Java_com_azilen_firstandroidndkproject_MainActivity_divideByZero(JNIEnv* env,
+JNIEXPORT jfloat JNICALL Java_com_adonnai_firstandroidndkproject_MainActivity_divideByZero(JNIEnv* env,
 				jobject jobj, jfloat x, jint y, jclass classObj) {
 			__android_log_print(ANDROID_LOG_INFO,APP_NAME, "value of x : %f \nvalue of y : %d ",x,y);
 		return (x/y);
@@ -20,7 +20,7 @@ This function will not return ArithmeticException when y == 0,
 
 to handle such scenarios, the jni code can be converted to:
 
-JNIEXPORT jfloat JNICALL Java_com_azilen_firstandroidndkproject_MainActivity_divideByZero(JNIEnv* env,
+JNIEXPORT jfloat JNICALL Java_com_adonnai_firstandroidndkproject_MainActivity_divideByZero(JNIEnv* env,
 				jobject jobj, jfloat x, jint y, jclass classObj) {
 			__android_log_print(ANDROID_LOG_INFO,APP_NAME, "value of x : %f \nvalue of y : %d ",x,y);
 	jclass cls = (env)->GetObjectClass(jobj);

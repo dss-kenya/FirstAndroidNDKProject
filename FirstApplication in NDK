@@ -1,0 +1,69 @@
+After installing ndk and assinging the appropriate path,
+
+In the cpp file generated, type the following:
+
+#include <jni.h> // to access all the jni datatypes and methods
+#include <android/log.h> // to be able to log from the jni lib
+
+#define APP_NAME "FirstAndroidNDKApp"
+
+JNIEXPORT jint JNICALL Java_com_azilen_firstandroidndkproject_MainActivity_addTwoNumbers(JNIEnv* env,
+			jobject jobj, jint x, jint y) {
+	__android_log_print(ANDROID_LOG_INFO,APP_NAME, "value of x : %d \nvalue of y : %d ",x,y);
+	return (x+y);
+}
+
+JNIEXPORT and JNICALL are values that are needed as a convention and for proper calling of JNI methods.
+
+Since this method is present in the cpp file, while trying to call the method from the activity in android, 
+it would throw java.lang.UnsatisfiedLinkError: methodName
+
+thus, enclose or wrap the cpp method inside 
+
+extern "c" {
+
+} block. this tells jni that the method is part of c itself.
+
+In the android project add the following:
+public class MainActivity extends Activity {
+  // this loads the library
+	static {
+		System.loadLibrary("FirstAndroidNDKProject");
+	}
+	
+	// this is the native method
+	public native int addTwoNumbers(int x,int y);
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		
+		int x= addTwoNumbers(10,20);
+		Log.e("dhara"," value of x : " + x);
+	}
+}
+
+Build the project and run the application.
+
+LEARNINGS:
+
+1. simply writing a function name as addTwoNumbers might not call the function name, hence the naming convention
+Java_com_package_name_activity_name_methodName. Also there should be no _ between the method name.
+2. Since a cpp method causes exceptions, wrap the code inside extern "c" block
+3. if the library name is "libProjectName".so, always call the library as System.loadLibrary("ProjectName"), 
+(do not add lib)
+4. Pass not only JNIENV* but also jobject
+5. JNIEXPORT jint Java_com_azilen_firstandroidndkproject_MainActivity_addTwoNumbers(jint x, jint y) {
+		__android_log_print(ANDROID_LOG_INFO,APP_NAME, "value of x : %d \n value of y : %d ",x,y);
+		return (x+y);
+} ->>> this will cause dummy values to be received.
+
+
+REFERENCES:
+
+1. http://stackoverflow.com/a/4629747/2683275
+2. http://stackoverflow.com/a/19983847/2683275
+3. http://stackoverflow.com/a/20812382/2683275
+4. http://stackoverflow.com/q/16323250/2683275
+5. http://en.wikipedia.org/wiki/Java_Native_Interface *
